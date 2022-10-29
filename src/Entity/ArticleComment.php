@@ -20,7 +20,7 @@ class ArticleComment
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['list'])]
+    #[Groups(['default', 'list'])]
     private ?int $id = null;
 
     #[ORM\Column(type: Types::TEXT)]

@@ -13,6 +13,8 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
+use Symfony\Component\Serializer\Serializer;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class ArticleCommentController extends BaseController
@@ -62,7 +64,7 @@ class ArticleCommentController extends BaseController
     }
 
     /**
-     * Add new comment to article.
+     * Add new comment to the article.
      *
      * @OA\RequestBody(
      *     @Model(type=ArticleComment::class, groups={"create"})
@@ -71,7 +73,7 @@ class ArticleCommentController extends BaseController
      * @OA\Response(
      *     response=201,
      *     description="Article comment was added successfully",
-     *     @Model(type=ArticleComment::class)
+     *     @Model(type=ArticleComment::class, groups={"default"})
      * )
      *
      * @OA\Response(
@@ -83,6 +85,14 @@ class ArticleCommentController extends BaseController
      *     name="articleId",
      *     in="path",
      *     description="ID of article",
+     *     @OA\Schema(type="integer")
+     * )
+     *
+     * @OA\Parameter(
+     *     name="parentCommentId",
+     *     required=false,
+     *     in="query",
+     *     description="ID of parent comment",
      *     @OA\Schema(type="integer")
      * )
      *
@@ -101,67 +111,11 @@ class ArticleCommentController extends BaseController
             $articleComment->setAuthorEmail($postData->authorEmail ?? null);
             $articleComment->setArticle($article);
 
-            $errors = $this->validator->validate($articleComment);
-            if (count($errors) > 0) {
-                return new JsonResponse($this->getValidationErrorsArray($errors), Response::HTTP_BAD_REQUEST);
+            $parentCommentId = $request->get('parentCommentId');
+            if ($parentCommentId) {
+                $parentComment = $this->articleCommentRepository->findById($parentCommentId);
+                $articleComment->setParent($parentComment);
             }
-
-            $this->articleCommentRepository->save($articleComment);
-            return $this->json($articleComment, Response::HTTP_CREATED);
-        } catch (ArticleNotFoundException $exception) {
-            return $this->json($exception->getMessage(), Response::HTTP_NOT_FOUND);
-        }
-    }
-
-    /**
-     * Add reply to the comment.
-     *
-     * @OA\RequestBody(
-     *     @Model(type=ArticleComment::class, groups={"create"})
-     * )
-     *
-     * @OA\Response(
-     *     response=201,
-     *     description="Article comment reply was added successfully",
-     *     @Model(type=ArticleComment::class)
-     * )
-     *
-     * @OA\Response(
-     *     response=400,
-     *     description="Bad request"
-     * )
-     *
-     * @OA\Parameter(
-     *     name="articleId",
-     *     in="path",
-     *     description="ID of article",
-     *     @OA\Schema(type="integer")
-     * )
-     *
-     * @OA\Parameter(
-     *     name="commentId",
-     *     in="path",
-     *     description="ID of parent comment",
-     *     @OA\Schema(type="integer")
-     * )
-     *
-     * @OA\Tag(name="Article Comments")
-     */
-    #[Route('/api/article/{articleId<\d+>}/comments/{commentId<\d+>}/reply', methods: ['POST'])]
-    public function addArticleCommentReply(Request $request, int $articleId, int $commentId): JsonResponse
-    {
-        try {
-            $article = $this->articleRepository->findById($articleId);
-            $parentComment = $this->articleCommentRepository->findById($commentId);
-
-            $postData = json_decode($request->getContent(), false);
-
-            $articleComment = new ArticleComment();
-            $articleComment->setText($postData->text ?? null);
-            $articleComment->setAuthor($postData->author ?? null);
-            $articleComment->setAuthorEmail($postData->authorEmail ?? null);
-            $articleComment->setArticle($article);
-            $articleComment->setParent($parentComment);
 
             $errors = $this->validator->validate($articleComment);
             if (count($errors) > 0) {
@@ -169,6 +123,7 @@ class ArticleCommentController extends BaseController
             }
 
             $this->articleCommentRepository->save($articleComment);
+
             return $this->json($articleComment, Response::HTTP_CREATED);
         } catch (ArticleNotFoundException|ArticleCommentNotFoundException $exception) {
             return $this->json($exception->getMessage(), Response::HTTP_NOT_FOUND);
