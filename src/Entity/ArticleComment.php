@@ -55,11 +55,6 @@ class ArticleComment
     #[ORM\Column(name: 'rgt', type: Types::INTEGER)]
     private ?int $rgt;
 
-    #[Gedmo\TreeRoot]
-    #[ORM\ManyToOne(targetEntity: ArticleComment::class)]
-    #[ORM\JoinColumn(name: 'tree_root', referencedColumnName: 'id', onDelete: 'CASCADE')]
-    private ?ArticleComment $root;
-
     #[Gedmo\TreeParent]
     #[ORM\ManyToOne(targetEntity: ArticleComment::class, inversedBy: 'children')]
     #[ORM\JoinColumn(name: 'parent_id', referencedColumnName: 'id', onDelete: 'CASCADE')]
@@ -118,5 +113,15 @@ class ArticleComment
     public function getParent(): ?self
     {
         return $this->parent;
+    }
+
+    public function setArticle(Article $article = null): void
+    {
+        $this->article = $article;
+    }
+
+    public function getArticle(): ?Article
+    {
+        return $this->article;
     }
 }
