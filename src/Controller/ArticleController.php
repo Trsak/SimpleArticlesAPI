@@ -4,15 +4,13 @@ namespace App\Controller;
 
 use App\Entity\Article;
 use App\Repository\ArticleRepository;
+use App\Repository\Exception\ArticleNotFoundException;
 use Nelmio\ApiDocBundle\Annotation\Model;
 use OpenApi\Annotations as OA;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\Serializer\Encoder\JsonEncoder;
-use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
-use Symfony\Component\Serializer\Serializer;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class ArticleController extends BaseController
@@ -22,6 +20,45 @@ class ArticleController extends BaseController
         private readonly ValidatorInterface $validator
     )
     {
+    }
+
+    /**
+     * Returns Article by id.
+     *
+     * @OA\Response(
+     *     response=200,
+     *     description="Article detail",
+     *     @Model(type=Article::class)
+     * )
+     *
+     * @OA\Response(
+     *     response=400,
+     *     description="Bad request"
+     * )
+     *
+     * @OA\Response(
+     *     response=404,
+     *     description="Article with given Id was not found"
+     * )
+     *
+     * @OA\Parameter(
+     *     name="articleId",
+     *     in="path",
+     *     description="ID of article",
+     *     @OA\Schema(type="integer")
+     * )
+     *
+     * @OA\Tag(name="Articles")
+     */
+    #[Route('/api/article/{articleId<\d+>}', methods: ['GET'])]
+    public function getArticle(int $articleId): JsonResponse
+    {
+        try {
+            $article = $this->articleRepository->findById($articleId);
+            return $this->json($article, Response::HTTP_OK);
+        } catch (ArticleNotFoundException $exception) {
+            return $this->json($exception->getMessage(), Response::HTTP_NOT_FOUND);
+        }
     }
 
     /**
@@ -62,5 +99,45 @@ class ArticleController extends BaseController
         $this->articleRepository->create($article);
 
         return $this->json($article, Response::HTTP_CREATED);
+    }
+
+    /**
+     * Removes given Article.
+     *
+     * @OA\Response(
+     *     response=200,
+     *     description="Article was removed successfully"
+     * )
+     *
+     * @OA\Response(
+     *     response=400,
+     *     description="Bad request"
+     * )
+     *
+     * @OA\Response(
+     *     response=404,
+     *     description="Article with given Id was not found"
+     * )
+     *
+     * @OA\Parameter(
+     *     name="articleId",
+     *     in="path",
+     *     description="ID of article",
+     *     @OA\Schema(type="integer")
+     * )
+     *
+     * @OA\Tag(name="Articles")
+     */
+    #[Route('/api/article/{articleId<\d+>}/remove', methods: ['DELETE'])]
+    public function removeArticle(int $articleId): Response
+    {
+        try {
+            $article = $this->articleRepository->findById($articleId);
+            $this->articleRepository->remove($article);
+        } catch (ArticleNotFoundException $exception) {
+            return $this->json($exception->getMessage(), Response::HTTP_NOT_FOUND);
+        }
+
+        return $this->json('Article was removed.', Response::HTTP_OK);
     }
 }
