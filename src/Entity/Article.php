@@ -14,10 +14,11 @@ class Article
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(['list'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(['default', 'create', 'update'])]
+    #[Groups(['default', 'create', 'update', 'list'])]
     #[Assert\NotBlank]
     private ?string $title = null;
 
@@ -27,7 +28,7 @@ class Article
     private ?string $text = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(['default', 'create', 'update'])]
+    #[Groups(['default', 'create', 'update', 'list'])]
     #[Assert\NotBlank]
     private ?string $author = null;
 

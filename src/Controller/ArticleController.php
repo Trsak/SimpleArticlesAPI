@@ -23,6 +23,32 @@ class ArticleController extends BaseController
     }
 
     /**
+     * Returns all articles
+     *
+     * @OA\Response(
+     *     response=200,
+     *     description="Article detail",
+     *     @OA\JsonContent(
+     *        type="array",
+     *        @OA\Items(ref=@Model(type=Article::class, groups={"list"}))
+     *     )
+     * )
+     *
+     * @OA\Response(
+     *     response=400,
+     *     description="Bad request"
+     * )
+     *
+     * @OA\Tag(name="Articles")
+     */
+    #[Route('/api/articles', methods: ['GET'])]
+    public function getArticles(): JsonResponse
+    {
+        $articles = $this->articleRepository->findAll();
+        return $this->json($articles, Response::HTTP_OK);
+    }
+
+    /**
      * Returns Article by id.
      *
      * @OA\Response(
