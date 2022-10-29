@@ -174,4 +174,62 @@ class ArticleCommentController extends BaseController
             return $this->json($exception->getMessage(), Response::HTTP_NOT_FOUND);
         }
     }
+
+    /**
+     * Updates given Article Comment.
+     *
+     * @OA\Response(
+     *     response=200,
+     *     description="Article comment detail",
+     *     @Model(type=ArticleComment::class)
+     * )
+     *
+     * @OA\Response(
+     *     response=400,
+     *     description="Bad request"
+     * )
+     *
+     * @OA\Response(
+     *     response=404,
+     *     description="Article or comment with given Id was not found"
+     * )
+     *
+     * @OA\Parameter(
+     *     name="articleId",
+     *     in="path",
+     *     description="ID of article",
+     *     @OA\Schema(type="integer")
+     * )
+     *
+     * @OA\Parameter(
+     *     name="commentId",
+     *     in="path",
+     *     description="ID of parent comment",
+     *     @OA\Schema(type="integer")
+     * )
+     *
+     * @OA\RequestBody(
+     *     @Model(type=ArticleComment::class, groups={"update"})
+     * )
+     *
+     * @OA\Tag(name="Articles Comments")
+     */
+    #[Route('/api/article/{articleId<\d+>}/comments/{commentId<\d+>}/update', methods: ['PATCH'])]
+    public function updateArticleComment(int $articleId, int $commentId, Request $request): Response
+    {
+        try {
+            $this->articleRepository->findById($articleId);
+            $articleComment = $this->articleCommentRepository->findById($commentId);
+            $postData = json_decode($request->getContent(), false);
+
+            $articleComment->setText($postData->text ?? null);
+            $articleComment->setAuthor($postData->author ?? null);
+            $articleComment->setAuthorEmail($postData->authorEmail ?? null);
+            $this->articleCommentRepository->save($articleComment);
+        } catch (ArticleNotFoundException|ArticleCommentNotFoundException $exception) {
+            return $this->json($exception->getMessage(), Response::HTTP_OK);
+        }
+
+        return $this->json($articleComment, Response::HTTP_OK);
+    }
 }
