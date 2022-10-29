@@ -12,4 +12,10 @@ class ArticleRepository extends ServiceEntityRepository
     {
         parent::__construct($registry, Article::class);
     }
+
+    public function create(Article $article) : void
+    {
+        $this->getEntityManager()->persist($article);
+        $this->getEntityManager()->flush();
+    }
 }

@@ -1,8 +1,9 @@
 nelmio_api_doc:
+    use_validation_groups: true
     documentation:
         info:
             title: Articles API
-            description: Some simple Articles and comments API
+            description: Simple Articles and comments API
             version: 1.0.0
     areas:
         path_patterns:
