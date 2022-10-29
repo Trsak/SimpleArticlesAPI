@@ -15,7 +15,7 @@ class ArticleRepository extends ServiceEntityRepository
         parent::__construct($registry, Article::class);
     }
 
-    public function findAllByCriteria(int $page = 1, $perPage = 5): array
+    public function findAllByCriteria(int $page = 1, int $perPage = 5): array
     {
         $query = $this->createQueryBuilder('a')
             ->select('a.id', 'a.title', 'a.author', 'a.createdAt', 'a.updatedAt')

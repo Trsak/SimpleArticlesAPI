@@ -3,13 +3,17 @@
 namespace App\Repository;
 
 use App\Entity\ArticleComment;
+use App\Mapper\ArticleCommentTreeMapper;
 use App\Repository\Exception\ArticleCommentNotFoundException;
 use Doctrine\ORM\EntityManagerInterface;
 use Gedmo\Tree\Entity\Repository\NestedTreeRepository;
 
 class ArticleCommentRepository extends NestedTreeRepository
 {
-    public function __construct(EntityManagerInterface $manager)
+    public function __construct(
+        private readonly ArticleCommentTreeMapper $articleCommentTreeMapper,
+        EntityManagerInterface $manager
+    )
     {
         parent::__construct($manager, $manager->getClassMetadata(ArticleComment::class));
     }
@@ -39,7 +43,8 @@ class ArticleCommentRepository extends NestedTreeRepository
             ->setParameter('articleId', $articleId)
             ->getQuery();
 
-        return $this->buildTreeArray($query->getArrayResult());
+        $arrayTree = $this->buildTreeArray($query->getArrayResult());
+        return $this->articleCommentTreeMapper->mapTree($arrayTree);
     }
 
     public function save(ArticleComment $articleComment): void
