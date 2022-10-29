@@ -30,7 +30,7 @@ class ArticleRepository extends ServiceEntityRepository
         return $article;
     }
 
-    public function create(Article $article): void
+    public function save(Article $article): void
     {
         $this->getEntityManager()->persist($article);
         $this->getEntityManager()->flush();

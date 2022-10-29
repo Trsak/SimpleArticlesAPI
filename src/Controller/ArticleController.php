@@ -96,7 +96,7 @@ class ArticleController extends BaseController
             return new JsonResponse($this->getValidationErrorsArray($errors), Response::HTTP_BAD_REQUEST);
         }
 
-        $this->articleRepository->create($article);
+        $this->articleRepository->save($article);
 
         return $this->json($article, Response::HTTP_CREATED);
     }
@@ -139,5 +139,55 @@ class ArticleController extends BaseController
         }
 
         return $this->json('Article was removed.', Response::HTTP_OK);
+    }
+
+    /**
+     * Updates given Article.
+     *
+     * @OA\Response(
+     *     response=200,
+     *     description="Article detail",
+     *     @Model(type=Article::class)
+     * )
+     *
+     * @OA\Response(
+     *     response=400,
+     *     description="Bad request"
+     * )
+     *
+     * @OA\Response(
+     *     response=404,
+     *     description="Article with given Id was not found"
+     * )
+     *
+     * @OA\Parameter(
+     *     name="articleId",
+     *     in="path",
+     *     description="ID of article",
+     *     @OA\Schema(type="integer")
+     * )
+     *
+     * @OA\RequestBody(
+     *     @Model(type=Article::class, groups={"update"})
+     * )
+     *
+     * @OA\Tag(name="Articles")
+     */
+    #[Route('/api/article/{articleId<\d+>}/update', methods: ['PATCH'])]
+    public function updateArticle(int $articleId, Request $request): Response
+    {
+        try {
+            $article = $this->articleRepository->findById($articleId);
+            $postData = json_decode($request->getContent(), false);
+
+            $article->setTitle($postData->title ?? $article->getTitle());
+            $article->setText($postData->text ?? $article->getText());
+            $article->setAuthor($postData->author ?? $article->getAuthor());
+            $this->articleRepository->save($article);
+        } catch (ArticleNotFoundException $exception) {
+            return $this->json($exception->getMessage(), Response::HTTP_OK);
+        }
+
+        return $this->json($article, Response::HTTP_OK);
     }
 }
