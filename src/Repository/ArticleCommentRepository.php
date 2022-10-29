@@ -52,4 +52,10 @@ class ArticleCommentRepository extends NestedTreeRepository
         $this->getEntityManager()->persist($articleComment);
         $this->getEntityManager()->flush();
     }
+
+    public function remove(ArticleComment $article): void
+    {
+        $this->getEntityManager()->remove($article);
+        $this->getEntityManager()->flush();
+    }
 }

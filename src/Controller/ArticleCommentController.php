@@ -212,7 +212,7 @@ class ArticleCommentController extends BaseController
      *     @Model(type=ArticleComment::class, groups={"update"})
      * )
      *
-     * @OA\Tag(name="Articles Comments")
+     * @OA\Tag(name="Article Comments")
      */
     #[Route('/api/article/{articleId<\d+>}/comments/{commentId<\d+>}/update', methods: ['PATCH'])]
     public function updateArticleComment(int $articleId, int $commentId, Request $request): Response
@@ -231,5 +231,54 @@ class ArticleCommentController extends BaseController
         }
 
         return $this->json($articleComment, Response::HTTP_OK);
+    }
+
+    /**
+     * Removes given Article Comment.
+     *
+     * @OA\Response(
+     *     response=200,
+     *     description="Article comment was removed successfully"
+     * )
+     *
+     * @OA\Response(
+     *     response=400,
+     *     description="Bad request"
+     * )
+     *
+     * @OA\Response(
+     *     response=404,
+     *     description="Article or comment with given Id was not found"
+     * )
+     *
+     * @OA\Parameter(
+     *     name="articleId",
+     *     in="path",
+     *     description="ID of article",
+     *     @OA\Schema(type="integer")
+     * )
+     *
+     * @OA\Parameter(
+     *     name="commentId",
+     *     in="path",
+     *     description="ID of comment",
+     *     @OA\Schema(type="integer")
+     * )
+     *
+     * @OA\Tag(name="Article Comments")
+     */
+    #[Route('/api/article/{articleId<\d+>}/comments/{commentId<\d+>}/remove', methods: ['DELETE'])]
+    public function removeArticle(int $articleId, int $commentId): Response
+    {
+        try {
+            $this->articleRepository->findById($articleId);
+
+            $articleComment = $this->articleCommentRepository->findById($commentId);
+            $this->articleCommentRepository->remove($articleComment);
+        } catch (ArticleCommentNotFoundException|ArticleNotFoundException $exception) {
+            return $this->json($exception->getMessage(), Response::HTTP_NOT_FOUND);
+        }
+
+        return $this->json('Article comment was removed.', Response::HTTP_OK);
     }
 }
