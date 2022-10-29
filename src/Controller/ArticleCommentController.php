@@ -27,14 +27,10 @@ class ArticleCommentController extends BaseController
     /**
      * Get all article comments.
      *
-     * @OA\RequestBody(
-     *     @Model(type=ArticleComment::class, groups={"create"})
-     * )
-     *
      * @OA\Response(
      *     response=201,
      *     description="Article comment was added successfully",
-     *     @Model(type=ArticleComment::class)
+     *     @Model(type=ArticleComment::class, groups={"list"})
      * )
      *
      * @OA\Response(
@@ -56,9 +52,9 @@ class ArticleCommentController extends BaseController
     {
         try {
             $article = $this->articleRepository->findById($articleId);
-            $articleComments = $this->articleCommentRepository->getByArticle($article->getId());
+            $articleComments = $this->articleCommentRepository->getTreeByArticle($article->getId());
 
-            return $this->json($articleComments, Response::HTTP_CREATED);
+            return $this->json($articleComments, Response::HTTP_OK);
         } catch (ArticleNotFoundException $exception) {
             return $this->json($exception->getMessage(), Response::HTTP_NOT_FOUND);
         }

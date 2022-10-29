@@ -24,7 +24,7 @@ class ArticleComment
     private ?int $id = null;
 
     #[ORM\Column(type: Types::TEXT)]
-    #[Groups(['default', 'create', 'update'])]
+    #[Groups(['default', 'create', 'update', 'list'])]
     #[Assert\NotBlank]
     private ?string $text = null;
 
@@ -38,10 +38,14 @@ class ArticleComment
     #[Assert\NotBlank]
     private ?string $authorEmail = null;
 
-    #[Gedmo\TreeRoot]
     #[ORM\ManyToOne(targetEntity: Article::class)]
     #[ORM\JoinColumn(name: 'article_id', referencedColumnName: 'id', onDelete: 'CASCADE')]
     private Article $article;
+
+    #[Gedmo\TreeRoot]
+    #[ORM\ManyToOne(targetEntity: ArticleComment::class)]
+    #[ORM\JoinColumn(name: 'tree_root', referencedColumnName: 'id', onDelete: 'CASCADE')]
+    private ?ArticleComment $root;
 
     #[Gedmo\TreeLeft]
     #[ORM\Column(name: 'lft', type: Types::INTEGER)]
@@ -60,7 +64,7 @@ class ArticleComment
     #[ORM\JoinColumn(name: 'parent_id', referencedColumnName: 'id', onDelete: 'CASCADE')]
     private ?ArticleComment $parent;
 
-    #[ORM\OneToMany(targetEntity: ArticleComment::class, mappedBy: 'parent')]
+    #[ORM\OneToMany(mappedBy: 'parent', targetEntity: ArticleComment::class)]
     #[ORM\OrderBy(['lft' => 'ASC'])]
     private Collection $children;
 

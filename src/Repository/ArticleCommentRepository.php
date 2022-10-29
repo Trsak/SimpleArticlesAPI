@@ -13,18 +13,18 @@ class ArticleCommentRepository extends NestedTreeRepository
         parent::__construct($manager, $manager->getClassMetadata(ArticleComment::class));
     }
 
-    public function getByArticle(int $articleId)
+    public function getTreeByArticle(int $articleId) : array
     {
         $query = $this->getEntityManager()
             ->createQueryBuilder()
             ->from(ArticleComment::class, 'c')
             ->select('c')
-            ->orderBy('c.article, c.lft', 'ASC')
+            ->orderBy('c.root, c.lft', 'ASC')
             ->where('c.article = :articleId')
             ->setParameter('articleId', $articleId)
             ->getQuery();
 
-        return $query->getResult();
+        return $this->buildTreeArray($query->getArrayResult());
     }
 
     public function save(ArticleComment $articleComment): void
