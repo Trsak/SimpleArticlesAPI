@@ -34,6 +34,20 @@ class ArticleController extends BaseController
      *     )
      * )
      *
+     * @OA\Parameter(
+     *     name="page",
+     *     in="query",
+     *     description="Page number",
+     *     @OA\Schema(type="integer")
+     * )
+     *
+     * @OA\Parameter(
+     *     name="perPage",
+     *     in="query",
+     *     description="Number of results per page",
+     *     @OA\Schema(type="integer")
+     * )
+     *
      * @OA\Response(
      *     response=400,
      *     description="Bad request"
@@ -42,9 +56,13 @@ class ArticleController extends BaseController
      * @OA\Tag(name="Articles")
      */
     #[Route('/api/articles', methods: ['GET'])]
-    public function getArticles(): JsonResponse
+    public function getArticles(Request $request): JsonResponse
     {
-        $articles = $this->articleRepository->findAll();
+        $articles = $this->articleRepository->findAllByCriteria(
+            $request->get('page', 1),
+            $request->get('perPage', 5)
+        );
+
         return $this->json($articles, Response::HTTP_OK);
     }
 
