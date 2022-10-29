@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\ArticleComment;
+use App\Model\ArticleCommentModel;
 use App\Repository\ArticleCommentRepository;
 use App\Repository\ArticleRepository;
 use App\Repository\Exception\ArticleCommentNotFoundException;
@@ -13,8 +14,6 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
-use Symfony\Component\Serializer\Serializer;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class ArticleCommentController extends BaseController
@@ -32,8 +31,11 @@ class ArticleCommentController extends BaseController
      *
      * @OA\Response(
      *     response=201,
-     *     description="Article comment was added successfully",
-     *     @Model(type=ArticleComment::class, groups={"list"})
+     *     description="Array of all article comments",
+     *     @OA\JsonContent(
+     *        type="array",
+     *        @OA\Items(ref=@Model(type=ArticleCommentModel::class))
+     *     )
      * )
      *
      * @OA\Response(
@@ -55,7 +57,7 @@ class ArticleCommentController extends BaseController
     {
         try {
             $article = $this->articleRepository->findById($articleId);
-            $articleComments = $this->articleCommentRepository->getTreeByArticle($article->getId());
+            $articleComments = $this->articleCommentRepository->getArticleCommentsArray($article->getId());
 
             return $this->json($articleComments, Response::HTTP_OK);
         } catch (ArticleNotFoundException $exception) {

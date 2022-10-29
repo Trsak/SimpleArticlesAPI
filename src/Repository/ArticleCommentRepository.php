@@ -32,7 +32,7 @@ class ArticleCommentRepository extends NestedTreeRepository
         return $articleComment;
     }
 
-    public function getTreeByArticle(int $articleId) : array
+    public function getArticleCommentsArray(int $articleId) : array
     {
         $query = $this->getEntityManager()
             ->createQueryBuilder()
@@ -44,7 +44,7 @@ class ArticleCommentRepository extends NestedTreeRepository
             ->getQuery();
 
         $arrayTree = $this->buildTreeArray($query->getArrayResult());
-        return $this->articleCommentTreeMapper->mapTree($arrayTree);
+        return $this->articleCommentTreeMapper->mapArrayTreeToArticleCommentArray($arrayTree);
     }
 
     public function save(ArticleComment $articleComment): void

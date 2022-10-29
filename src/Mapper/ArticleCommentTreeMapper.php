@@ -2,24 +2,27 @@
 
 namespace App\Mapper;
 
+use App\Model\ArticleCommentModel;
+
 class ArticleCommentTreeMapper
 {
-    public function mapTree(array $tree) : array
+    public function mapArrayTreeToArticleCommentArray(array $tree): array
     {
-        $resultArray = array();
+        $commentsArray = array();
 
         foreach ($tree as $treeItem) {
-            $resultArray[] = array(
-                'id' => $treeItem['id'],
-                'text' => $treeItem['text'],
-                'author' => $treeItem['author'],
-                'authorEmail' => $treeItem['authorEmail'],
-                'createdAt' => $treeItem['createdAt'],
-                'updatedAt' => $treeItem['updatedAt'],
-                'replies' => $this->mapTree($treeItem['__children'])
-            );
+            $articleComment = new ArticleCommentModel();
+            $articleComment->id = $treeItem['id'];
+            $articleComment->text = $treeItem['text'];
+            $articleComment->author = $treeItem['author'];
+            $articleComment->authorEmail = $treeItem['authorEmail'];
+            $articleComment->createdAt = $treeItem['createdAt'];
+            $articleComment->updatedAt = $treeItem['updatedAt'];
+            $articleComment->replies = $this->mapArrayTreeToArticleCommentArray($treeItem['__children']);
+
+            $commentsArray[] = $articleComment;
         }
 
-        return $resultArray;
+        return $commentsArray;
     }
 }
