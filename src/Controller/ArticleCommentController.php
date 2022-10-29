@@ -25,6 +25,46 @@ class ArticleCommentController extends BaseController
     }
 
     /**
+     * Get all article comments.
+     *
+     * @OA\RequestBody(
+     *     @Model(type=ArticleComment::class, groups={"create"})
+     * )
+     *
+     * @OA\Response(
+     *     response=201,
+     *     description="Article comment was added successfully",
+     *     @Model(type=ArticleComment::class)
+     * )
+     *
+     * @OA\Response(
+     *     response=400,
+     *     description="Bad request"
+     * )
+     *
+     * @OA\Parameter(
+     *     name="articleId",
+     *     in="path",
+     *     description="ID of article",
+     *     @OA\Schema(type="integer")
+     * )
+     *
+     * @OA\Tag(name="Article Comments")
+     */
+    #[Route('/api/article/{articleId<\d+>}/comments', methods: ['GET'])]
+    public function getArticleComments(int $articleId): JsonResponse
+    {
+        try {
+            $article = $this->articleRepository->findById($articleId);
+            $articleComments = $this->articleCommentRepository->getByArticle($article->getId());
+
+            return $this->json($articleComments, Response::HTTP_CREATED);
+        } catch (ArticleNotFoundException $exception) {
+            return $this->json($exception->getMessage(), Response::HTTP_NOT_FOUND);
+        }
+    }
+
+    /**
      * Add new comment to article.
      *
      * @OA\RequestBody(
@@ -51,7 +91,7 @@ class ArticleCommentController extends BaseController
      *
      * @OA\Tag(name="Article Comments")
      */
-    #[Route('/api/article/{articleId<\d+>}/addComment', methods: ['POST'])]
+    #[Route('/api/article/{articleId<\d+>}/comments/add', methods: ['POST'])]
     public function addArticleComment(Request $request, int $articleId): JsonResponse
     {
         try {
